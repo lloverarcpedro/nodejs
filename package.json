@@ -1,0 +1,17 @@
+{
+  "name": "curso-nodejs",
+  "version": "1.0.0",
+  "description": "descripcion",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "PedroLLL",
+  "license": "MIT",
+  "dependencies": {
+    "countries-list": "^2.5.6",
+    "grpc": "^1.24.3",
+    "node-gyp": "^7.1.0"
+  }
+}
