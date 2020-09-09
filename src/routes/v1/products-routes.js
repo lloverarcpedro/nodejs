@@ -5,6 +5,7 @@ const router = express.Router()
 
 router.post('/create', producsController.createProduct)
 router.post('/delete', producsController.deleteProduct)
-router.get('/getByUser', producsController.getProductByUser)
+router.get('/getAll', producsController.getProducts)
+router.get('/getByUser/:userId', producsController.getProductByUser)
 
 module.exports = router
