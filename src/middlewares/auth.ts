@@ -3,6 +3,7 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 import jwt from 'jsonwebtoken'
 import { Request, Response, NextFunction } from 'express'
+import Users from '../mongo/models/users-model'
 
 const isValidHostname = (req: Request, res: Response, next: NextFunction) => {
     const validHosts = ['localhost', 'grainchain.io']
@@ -13,13 +14,14 @@ const isValidHostname = (req: Request, res: Response, next: NextFunction) => {
     }
 }
 
-const isAuth = (req: Request, res: Response, next: NextFunction) => {
+const isAuth = async (req: Request, res: Response, next: NextFunction) => {
     console.log('req.headers', req.headers)
     try {
         const token = req.headers.token
         if (token) {
             const data: any = jwt.verify(token as string, process.env.JWT_SECRET!)
-            req.sessionData = { userId: data.userId, role: data.role, email:data.email }
+            const user = await Users.findOne({ _id: data.userId })
+            req.sessionData = { userId: data.userId, role: data.role, email: user?.email, username: user?.username }
             next()
         } else {
             throw {
