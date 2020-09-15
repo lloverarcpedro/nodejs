@@ -6,15 +6,15 @@ import fs from 'fs'
 import yaml from 'js-yaml'
 
 // Constants for profile
-const CONNECTION_PROFILE_PATH = '/Users/pedrollovera/Documents/Curso-NodeJS/src/controllers/v1/profiles/dev-connection.yaml'
+const CONNECTION_PROFILE_PATH = '/Users/pedrollovera/Documents/Curso-NodeJS/src/controllers/v1/profiles/dev-harvx-connection.json'
 // Path to the wallet
-const FILESYSTEM_WALLET_PATH = '/Users/pedrollovera/Documents/Curso-NodeJS/src/controllers/v1/user-wallet'
+const FILESYSTEM_WALLET_PATH = '/Users/pedrollovera/Documents/Curso-NodeJS/wallet'
 // Identity context used
-const USER_ID = 'Admin@acme.com'
+let USER_ID = 'admin'
 // Channel name
-const NETWORK_NAME = 'airlinechannel'
+const NETWORK_NAME = 'grainchainchannel'
 // Chaincode
-const CONTRACT_ID = 'erc20'
+const CONTRACT_ID = 'gocc1'
 let logData = JSON.parse('{}')
 
 
@@ -24,6 +24,8 @@ const invokeCC = async (req: Request, res: Response) => {
         // 1. Create an instance of the gatway
         const { destination, amount } = req.body
         const origin = req.sessionData.username
+        //USER_ID = 'Admin@harvx.io'
+        USER_ID = req.sessionData.email
         console.log('origin: ',origin)
         if (!destination) {
             throw new Error('missing parameter destination name')
@@ -48,7 +50,9 @@ const invokeCC = async (req: Request, res: Response) => {
 
 const queryCC = async (req: Request, res: Response) =>{
     try{
+        USER_ID = req.sessionData.email
         const origin = req.sessionData.username
+        console.log('from',origin)
         const gateway = new Gateway()
         const result = await balanceInquiry(gateway,origin)
         res.send({
@@ -108,7 +112,7 @@ async function balanceInquiry(gateway: Gateway, origin: string){
 async function queryContract(contract: Contract, personName: string) {
     try {
         // Query the chaincode
-        const response = await contract.evaluateTransaction('balanceOf', personName)
+        const response = await contract.evaluateTransaction('query', personName)
         const result = `Query Response=${response.toString()}`
         console.log(`${result}`)
         return JSON.parse(response.toString())
@@ -125,7 +129,7 @@ async function queryContract(contract: Contract, personName: string) {
 async function submitTxnContract(contract: Contract,origin:string, destination: string, amount: string) {
     try {
         // Submit the transaction
-        const response = await contract.submitTransaction('transfer', origin, destination, amount)
+        const response = await contract.submitTransaction('invoke', origin, destination, amount)
         console.log('Submit Responseee=', response.toString())
     } catch (e) {
         // fabric-network.TimeoutError
@@ -140,7 +144,7 @@ async function submitTxnContract(contract: Contract,origin:string, destination: 
 async function setupGateway(gateway: Gateway) {
 
     // 2.1 load the connection profile into a JS object
-    const connectionProfile = yaml.safeLoad(fs.readFileSync(CONNECTION_PROFILE_PATH, 'utf8')) ?? ''
+    const connectionProfile = JSON.parse(fs.readFileSync(CONNECTION_PROFILE_PATH, 'utf8')) ?? ''
 
     // 2.2 Need to setup the user credentials from wallet
     const wallet = new FileSystemWallet(FILESYSTEM_WALLET_PATH)
@@ -173,7 +177,7 @@ async function setupGateway(gateway: Gateway) {
  */
 async function submitTxnTransaction(contract: Contract,origin: string, destination: string, amount: string) {
     // Provide the function name
-    const txn = contract.createTransaction('transfer')
+    const txn = contract.createTransaction('invoke')
 
     // Get the name of the transaction
     console.log(txn.getName())

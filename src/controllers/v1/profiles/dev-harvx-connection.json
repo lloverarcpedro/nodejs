@@ -1,0 +1,52 @@
+{
+    "name": "grainchainnet",
+    "version": "1.0.0",
+    "client": {
+        "organization": "grainchain",
+        "connection": {
+            "timeout": {
+                "peer": {
+                    "endorser": "300"
+                },
+                "orderer": "300"
+            }
+        }
+    },
+    "channels": {
+        "grainchainchannel": {
+            "orderers": ["orderer.grainchain.io"],
+            "peers": {
+                "peer1.grainchain.io": {
+                    "endorsingPeer":true,
+                    "chaincodeQuery":true,
+                    "ledgerQuery":true, 
+                    "eventSource":true, 
+                    "discover":true
+                }
+            }
+        }
+    },
+    "organizations": {
+        "grainchain": {
+            "mspid": "GrainchainMSP",
+            "peers": ["peer1.grainchain.io"],
+            "certificateAuthorities": ["cert-auth.grainchain.io"]
+        }
+    },
+    "orderers": {
+        "orderer.grainchain.io": {
+            "url": "grpc://localhost:7050"
+        }
+    },
+    "peers": {
+        "peer1.grainchain.io": {
+            "url": "grpc://localhost:7051"
+        }
+    },
+    "certificateAuthorities": {
+        "cert-auth.grainchain.io": {
+            "url": "http://localhost:7054",
+            "caName": "cert-auth.grainchain.io"
+        }
+    }
+}

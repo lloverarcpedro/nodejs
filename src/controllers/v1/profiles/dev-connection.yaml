@@ -103,3 +103,7 @@ peers:
     # tlsCACerts:
     #   path: [ This need to be set if TLS is enabled on peer]
 
+certificateAuthorities:
+  acme-ca.acme.com:
+    url: http://localhost:7054
+    caName: acme-ca.acme.com

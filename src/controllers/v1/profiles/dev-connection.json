@@ -1,0 +1,46 @@
+{
+    "name": "airlinechannel",
+    "version": "1.0.0",
+    "client": {
+        "organization": "acme",
+        "connection": {
+            "timeout": {
+                "peer": {
+                    "endorser": "300"
+                },
+                "orderer": "300"
+            }
+        }
+    },
+    "channels": {
+        "mychannel": {
+            "orderers": ["orderer.acme.com"],
+            "peers": {
+                "acme-peer1.acme.com": {}
+            }
+        }
+    },
+    "organizations": {
+        "acme": {
+            "mspid": "AcmeMSP",
+            "peers": ["acme-peer1.acme.com"],
+            "certificateAuthorities": ["acme-ca.acme.com"]
+        }
+    },
+    "orderers": {
+        "orderer.acme.com": {
+            "url": "grpc://localhost:7050"
+        }
+    },
+    "peers": {
+        "acme-peer1.acme.com": {
+            "url": "grpc://localhost:7051"
+        }
+    },
+    "certificateAuthorities": {
+        "acme-ca.acme.com": {
+            "url": "http://localhost:7054",
+            "caName": "acme-ca.acme.com"
+        }
+    }
+}
