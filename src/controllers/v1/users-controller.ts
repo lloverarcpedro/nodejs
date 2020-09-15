@@ -14,6 +14,7 @@ const login = async (req: Request, res: Response) => {
         const user = await Users.findOne({ email })
         if (user) {
             const equalP = await bcrypt.compare(password, user.password)
+            console.log(equalP)
             if (equalP) {
                 const token = jwt.sign(
                     { userId: user._id, role: user.role },
