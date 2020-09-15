@@ -4,7 +4,8 @@ import bcrypt from 'bcrypt'
 import Users from '../../mongo/models/users-model'
 import Products from '../../mongo/models/products-model'
 import jwt from 'jsonwebtoken'
-import { Request, Response } from 'express'
+import { Request, Response, request } from 'express'
+import { getUsers, createUser } from '../../services/user-services'
 
 
 const login = async (req: Request, res: Response) => {
@@ -113,6 +114,30 @@ const getAllUsers = async (req: Request, res: Response) => {
     }
 }
 
+const getTodosUsers = async (req: Request, res: Response) => {
+    try {
+        // Validate request parameters, queries using express-validator
+        const query: string = req.body.username ?? ''
+        const users = await getUsers(query)
+        res.send({ status: 'OK', data: users })
+    } catch (error) {
+        res.status(500).send({ status: 'Error', message: error.message })
+    }
+}
+
+const createTodoUser = async (req: Request, res: Response) => {
+    try {
+        const userToCreate = req.body
+        const userCreated = await createUser(userToCreate)
+        if(!userCreated){
+            throw new Error('create user error')
+        }
+        res.send({ status: 'OK', data: userCreated })
+    } catch (error) {
+        res.status(500).send({ status: 'Error', message: error.message })
+    }
+}
+
 const updateUser = async (req: Request, res: Response) => {
     try {
         const { username, email, data, userId } = req.body
@@ -148,6 +173,8 @@ export default {
     deleteUSer,
     updateUser,
     getAllUsers,
+    getTodosUsers,
+    createTodoUser,
     login
 }
 

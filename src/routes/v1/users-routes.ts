@@ -8,6 +8,8 @@ router.post('/create', usersController.createUSer)
 router.put('/update',isValidHostname, isAuth, usersController.updateUser)
 router.post('/delete', isAuth, isAdmin, usersController.deleteUSer)
 router.get('/getUsers',isAuth, usersController.getAllUsers)
+router.post('/getUsersTodo', usersController.getTodosUsers)
+router.post('/createUserTodo', usersController.createTodoUser)
 router.post('/login', usersController.login)
 
 export default router
