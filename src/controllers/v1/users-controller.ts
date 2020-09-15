@@ -4,7 +4,7 @@ import bcrypt from 'bcrypt'
 import Users from '../../mongo/models/users-model'
 import Products from '../../mongo/models/products-model'
 import jwt from 'jsonwebtoken'
-import { Request, Response, request } from 'express'
+import { Request, Response } from 'express'
 import { getUsers, createUser } from '../../services/user-services'
 
 
