@@ -55,4 +55,25 @@ const isAdmin = async (req: Request, res: Response, next: NextFunction) => {
     }
 }
 
-export { isValidHostname, isAuth, isAdmin }
+const validateRole = (requiredRole: string) => {
+    const middelware = async function (req: Request, res: Response, next: NextFunction) {
+        try {
+            const { role } = req.sessionData
+            console.log('role received', role)
+            if (role != requiredRole)
+                throw {
+                    code: 403,
+                    status: 'Access denied',
+                    message: `${requiredRole} only`,
+                }
+            next()
+        } catch (error) {
+            res
+                .status(error.code || 500)
+                .send({ status: 'Error', message: error.message })
+        }
+    }
+    return middelware
+}
+
+export { isValidHostname, isAuth, isAdmin, validateRole }
