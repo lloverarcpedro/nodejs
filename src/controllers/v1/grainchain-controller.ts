@@ -2,15 +2,14 @@
 import { Gateway, FileSystemWallet, Contract } from 'fabric-network'
 import { Request, Response } from 'express'
 import fs from 'fs'
-// Used for parsing the connection profile YAML file
-import yaml from 'js-yaml'
+
 
 // Constants for profile
 const CONNECTION_PROFILE_PATH = '/Users/pedrollovera/Documents/Curso-NodeJS/src/controllers/v1/profiles/dev-harvx-connection.json'
 // Path to the wallet
 const FILESYSTEM_WALLET_PATH = '/Users/pedrollovera/Documents/Curso-NodeJS/wallet'
 // Identity context used
-let USER_ID = 'admin'
+const USER_ID = 'admin'
 // Channel name
 const NETWORK_NAME = 'grainchainchannel'
 // Chaincode
@@ -18,23 +17,27 @@ const CONTRACT_ID = 'gocc1'
 let logData = JSON.parse('{}')
 
 
-const invokeCC = async (req: Request, res: Response) => {
+const createContract = async (req: Request, res: Response) => {
 
     try {
         // 1. Create an instance of the gatway
-        const { destination, amount } = req.body
-        const origin = req.sessionData.username
-        //USER_ID = 'Admin@harvx.io'
-        USER_ID = req.sessionData.email
-        console.log('origin: ', origin)
-        if (!destination) {
-            throw new Error('missing parameter destination name')
+        const { contractId, buyerId, maxWeight, commodityId } = req.body
+
+
+        if (!contractId) {
+            throw new Error('missing parameter contractId')
         }
-        if (!amount) {
-            throw new Error('missing parameter amount to send')
+        if (!buyerId) {
+            throw new Error('missing parameter buyerId')
+        }
+        if (!maxWeight) {
+            throw new Error('missing parameter maxWeight')
+        }
+        if (!commodityId) {
+            throw new Error('missing parameter commodityId')
         }
         const gateway = new Gateway()
-        await main(gateway, origin, destination, amount)
+        await main(gateway, req)
         res.send({
             status: 'OK',
             data: logData
@@ -48,13 +51,13 @@ const invokeCC = async (req: Request, res: Response) => {
 
 }
 
-const queryCC = async (req: Request, res: Response) => {
+const getContract = async (req: Request, res: Response) => {
     try {
-        USER_ID = req.sessionData.email
-        const origin = req.sessionData.username
-        console.log('from', origin)
+        
+        const contractId = req.params.id
+        console.log('from', contractId)
         const gateway = new Gateway()
-        const result = await balanceInquiry(gateway, origin)
+        const result = await getContractById(gateway, contractId)
         res.send({
             status: 'OK',
             data: result
@@ -68,7 +71,9 @@ const queryCC = async (req: Request, res: Response) => {
 }
 
 
-async function main(gateway: Gateway, origin: string, destination: string, amount: string) {
+async function main(gateway: Gateway, req: Request) {
+
+    const { contractId, buyerId, maxWeight, commodityId } = req.body
 
     // 2. Setup the gateway object
     await setupGateway(gateway)
@@ -78,30 +83,29 @@ async function main(gateway: Gateway, origin: string, destination: string, amoun
     //console.log(network)
 
     // 5. Get the contract
-    const contract = await network.getContract(CONTRACT_ID)
+    const contract = await network.getContract(CONTRACT_ID,'grainContract')
     // console.log(contract)
 
     // 6. Query the chaincode
-    await queryContract(contract, origin)
+    await queryContract(contract, contractId)
 
     // 7. Execute the transaction
-    await submitTxnContract(contract, origin, destination, amount)
+    await submitTxnContract(contract, contractId, buyerId, maxWeight, commodityId)
     // Must give delay or use await here otherwise Error=MVCC_READ_CONFLICT
     // await submitTxnContract(contract)
 
     //8. Query john & Sam
-    await queryContract(contract, origin)
-    await queryContract(contract, destination)
+    await queryContract(contract, contractId)
 
     // 9. submitTxnTransaction
-    await submitTxnTransaction(contract, origin, destination, amount)
-    logData = await queryContract(contract, origin)
+    await submitTxnTransaction(contract, contractId, buyerId, maxWeight, commodityId)
+    logData = await queryContract(contract, contractId)
 }
 
-async function balanceInquiry(gateway: Gateway, origin: string) {
+async function getContractById(gateway: Gateway, origin: string) {
     await setupGateway(gateway)
     const network = await gateway.getNetwork(NETWORK_NAME)
-    const contract = await network.getContract(CONTRACT_ID)
+    const contract = await network.getContract(CONTRACT_ID,'grainContract')
     return await queryContract(contract, origin)
 }
 
@@ -109,10 +113,10 @@ async function balanceInquiry(gateway: Gateway, origin: string) {
  * Queries the chaincode
  * @param {object} contract 
  */
-async function queryContract(contract: Contract, personName: string) {
+async function queryContract(contract: Contract, contractId: string) {
     try {
         // Query the chaincode
-        const response = await contract.evaluateTransaction('query', personName)
+        const response = await contract.evaluateTransaction('getContract', contractId)
         const result = `Query Response=${response.toString()}`
         console.log(`${result}`)
         return JSON.parse(response.toString())
@@ -126,10 +130,10 @@ async function queryContract(contract: Contract, personName: string) {
  * Submit the transaction
  * @param {object} contract 
  */
-async function submitTxnContract(contract: Contract, origin: string, destination: string, amount: string) {
+async function submitTxnContract(contract: Contract, contractId: string, buyerId: string, maxWeight: string, commodityId: string) {
     try {
         // Submit the transaction
-        const response = await contract.submitTransaction('invoke', origin, destination, amount)
+        const response = await contract.submitTransaction('addContract', contractId, buyerId, maxWeight, commodityId)
         console.log('Submit Responseee=', response.toString())
     } catch (e) {
         // fabric-network.TimeoutError
@@ -175,9 +179,9 @@ async function setupGateway(gateway: Gateway) {
  * To execute this add the line in main() => submitTxnTransaction(contract)
  * @param {object} contract 
  */
-async function submitTxnTransaction(contract: Contract, origin: string, destination: string, amount: string) {
+async function submitTxnTransaction(contract: Contract, contractId: string, buyerId: string, maxWeight: string, commodityId: string) {
     // Provide the function name
-    const txn = contract.createTransaction('invoke')
+    const txn = contract.createTransaction('addContract')
 
     // Get the name of the transaction
     console.log(txn.getName())
@@ -187,11 +191,11 @@ async function submitTxnTransaction(contract: Contract, origin: string, destinat
 
     // Submit the transaction
     try {
-        const response = await txn.submit(origin, destination, amount)
+        const response = await txn.submit(contractId, buyerId, maxWeight, commodityId)
         console.log('ransaction.submit()=', response.toString())
     } catch (e) {
         console.log(e)
     }
 }
 
-export default { invokeCC, queryCC }
+export default { createContract, getContract }
