@@ -11,16 +11,30 @@ const loginValidation = (): ValidationChain[] => {
     ]
 }
 
-const createValidation = (): ValidationChain[] => {
+const addContractValidator = (): ValidationChain[] => {
 
+    return [
+        // ContractID not empty
+        body('contractId').notEmpty(),
+        //buyerID not Empty
+        body('buyerId').notEmpty(),
+        //maxWeight not Empty
+        body('maxWeight').notEmpty(),
+        //commodityID not Empty
+        body('commodityId').notEmpty()
+    ]
+
+}
+
+const  createValidation = (): ValidationChain[] => {
     return [// email format
         body('email').isEmail(),
         //username
         body('username').isLength({ min: 6 }),
         //role must be seller or admin?
-        body('role').isIn(['seller','admin']),
+        body('role').isIn(['seller', 'admin']),
         //password length min 5
-        body('password','password min length is 5').isLength({ min: 5 }),
+        body('password', 'password min length is 5').isLength({ min: 5 }),
         //data is Json
         body('data').isJSON(),
         //data  age validationd
@@ -28,7 +42,6 @@ const createValidation = (): ValidationChain[] => {
         //data is male validation
         body('data.isMale').notEmpty()
     ]
-
 }
 
 const validate = (req: Request, res: Response, next: NextFunction): unknown => {
@@ -47,5 +60,6 @@ const validate = (req: Request, res: Response, next: NextFunction): unknown => {
 export {
     loginValidation,
     createValidation,
+    addContractValidator,
     validate,
 }
